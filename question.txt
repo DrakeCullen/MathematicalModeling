@@ -1,0 +1,5 @@
+How do we know the model we are fitting accurately represent the real world?
+	How can we check?
+		What are the acceptable losses?
+How do we test the model?
+
