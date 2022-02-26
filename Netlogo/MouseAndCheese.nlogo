@@ -1,12 +1,10 @@
-globals [ traps?
-          cheeses?
-          numPatches?
-          mice?
+globals [ numPatches?
           x?
           y?
         ]
 turtles-own [ intelligence?
               moving?
+              energy?
               ]
 patches-own [ trap? 
               cheese?
@@ -14,8 +12,8 @@ patches-own [ trap?
 
 to setup
   clear-all
-  set numPatches? 399
-  set mice? 5
+  RESET-TICKS
+  set numPatches? 1089
   colorPatches
   setupTurtles
  
@@ -23,12 +21,13 @@ to setup
 end
 
 to setupTurtles
-   create-turtles 3 [
+   create-turtles initialMice? [
      set moving? true
      set shape "mouse"
      set color grey
      setxy random-xcor random-ycor
-     set intelligence? 9999
+     set intelligence? random 100 
+     set energy? 10000
    ]
   ask turtles [
     if ([pcolor] of patch-ahead 0 = red) [setxy random-xcor random-ycor]
@@ -38,35 +37,41 @@ end
 
 to moveTurtles
   ask turtles [
-    if ([pcolor] of patch-ahead 0 = red) [ set moving? false set color pink]
-    if ([pcolor] of patch-ahead 0 = yellow) [ set pcolor green set color yellow]
-    if moving? = true [
-      ifelse ([pcolor] of patch-ahead 1 = red )
-         [ 
-           ifelse intelligence? > random-float 10000 [right 90][forward 1]
+    if ([pcolor] of patch-ahead 0 = red or energy? < 0) [ die ]
+    if (random 1000 > 999) [ hatch 1 set energy? energy? - 100]
+    if ([pcolor] of patch-ahead 0 = yellow) [ set pcolor green set energy? energy? + 140 createCheese]
+    set energy? energy? - 1
+    set label intelligence?
+    ifelse ([pcolor] of patch-ahead 1 = red )
+       [ 
+         ifelse (random-float 95 > intelligence? and random 100000 > 99900) [forward 1][right 90]
+       ]
+       [ ifelse random-float 100 < 15  
+         [
+          ifelse random-float 100 < 50  [ right 90 ] [ right 270 ]
          ]
-         [ ifelse random-float 100 < 15  
-           [
-            ifelse random-float 100 < 50  [ right 90 ] [ right 270 ]
-           ]
-           [ forward 1 ]
-         ]
-    ]  
+         [ forward 1 ]
+       ] 
   ]
+  tick
 end
 
-to setCheese
-  repeat cheeses? [
-     ask one-of patches with [pcolor = green] [
+to createCheese
+  ask one-of patches with [pcolor = green] [
        set pcolor yellow
        set trap? false
        set cheese? true   
      ]
+end
+
+to setCheese
+  repeat numCheese? [
+     createCheese
   ]
 end
 
 to setTrap
-  repeat traps? [
+  repeat numTraps? [
      ask one-of patches with [pcolor = green] [
          set pcolor red
          set cheese? false
@@ -76,7 +81,7 @@ to setTrap
 end
 
 to setMice
-  repeat mice? [
+  repeat initialMice? [
      ask one-of patches with [pcolor = green] [
          
     ]
@@ -84,8 +89,7 @@ to setMice
 end
 
 to colorPatches
-  set traps? 5
-  set cheeses? 2
+  ;;set cheeses? 2
   ask n-of numPatches? patches [ set pcolor green ]
   setCheese
   setTrap
@@ -94,11 +98,11 @@ end
 GRAPHICS-WINDOW
 210
 10
-850
-611
-10
-9
-30.0
+799
+616
+16
+16
+15.0
 1
 10
 1
@@ -108,10 +112,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--10
-10
--9
-9
+-16
+16
+-16
+16
 0
 0
 1
@@ -119,10 +123,10 @@ ticks
 30.0
 
 BUTTON
-5
-46
-79
-79
+14
+15
+88
+48
 Setup
 setup
 NIL
@@ -136,10 +140,10 @@ NIL
 1
 
 BUTTON
-112
-44
-181
-77
+113
+15
+182
+48
 Move
 moveTurtles
 NIL
@@ -153,10 +157,10 @@ NIL
 1
 
 BUTTON
-71
-109
-165
-142
+51
+65
+145
+98
 Simulate
 moveTurtles
 T
@@ -168,6 +172,69 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+14
+113
+187
+147
+initialMice?
+initialMice?
+0
+20
+15
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+13
+163
+186
+197
+numTraps?
+numTraps?
+0
+50
+25
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+14
+218
+187
+252
+numCheese?
+numCheese?
+0
+50
+24
+1
+1
+NIL
+HORIZONTAL
+
+PLOT
+862
+30
+1340
+429
+Intelligence Vs. Time
+Time
+Intelligence
+0.0
+10.0
+0.0
+10.0
+true
+false
+"setupTurtles" ""
+PENS
+"default" 1.0 0 -10873583 true "" "plot mean [intelligence?] of turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -375,16 +442,15 @@ Line -7500403 true 150 0 150 150
 mouse
 true
 0
-Rectangle -16777216 true false 735 570 795 645
-Polygon -7500403 true true 210 180 210 120 180 75 105 75 90 120 90 180 135 210 150 225 165 210 210 180
-Polygon -7500403 true true 135 75 135 45 150 30 195 30 225 45 240 90 225 90 210 45 165 45 150 75
-Rectangle -16777216 true false 165 165 180 180
-Rectangle -16777216 true false 135 165 135 180
-Rectangle -16777216 true false 120 165 135 180
-Line -16777216 false 180 195 210 225
-Line -16777216 false 165 195 195 240
-Line -16777216 false 150 210 120 240
-Line -16777216 false 135 210 105 225
+Circle -7500403 true true 44 14 212
+Rectangle -16777216 true false 105 75 135 105
+Circle -2064490 true false 129 9 42
+Line -16777216 false 180 45 210 15
+Line -16777216 false 210 60 240 30
+Line -16777216 false 105 45 90 15
+Line -16777216 false 90 60 60 30
+Polygon -7500403 true true 165 210 180 240 180 270 150 285 105 270 120 255 150 270 150 255 150 210 165 210
+Rectangle -16777216 true false 165 75 195 105
 
 pentagon
 false
